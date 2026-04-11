@@ -3,7 +3,9 @@ import Layout from '../../layouts/Layout.astro';
 import Navbar from '../../components/Navbar.astro';
 import Footer from '../../components/Footer.astro';
 import LessonList from '../../components/LessonList';
+import Quiz from '../../components/Quiz';
 import { courseData, getModuleById } from '../../data/course';
+import quizData from '../../data/quizzes.json';
 
 export function getStaticPaths() {
   return courseData.modules.map((m) => ({
@@ -17,6 +19,9 @@ const module = getModuleById(Number(id));
 if (!module) {
   return Astro.redirect('/');
 }
+
+const quizQuestions = (quizData as Record<string, unknown[]>)[String(module.id)];
+const hasModuleQuiz = Array.isArray(quizQuestions) && quizQuestions.length > 0;
 ---
 
 <Layout title={`Модуль ${module.id}: ${module.title}`}>
@@ -51,6 +56,14 @@ if (!module) {
 
     <!-- Lesson list -->
     <LessonList client:load lessons={module.lessons} moduleColor={module.color} />
+
+    {hasModuleQuiz && (
+      <section class="mt-12">
+        <h2 class="text-2xl font-bold text-text-primary mb-2">Тест по модулю</h2>
+        <p class="text-text-secondary mb-6">Проверьте свои знания по модулю {id}</p>
+        <Quiz client:load moduleId={module.id} />
+      </section>
+    )}
   </main>
 
   <Footer />

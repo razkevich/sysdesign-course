@@ -13,39 +13,38 @@ interface Question {
 }
 
 interface Props {
-  lessonId: string;
+  moduleId: number;
 }
 
-const STORAGE_PREFIX = 'sysdesign:quiz:';
+const STORAGE_PREFIX = 'sysdesign:quiz:module-';
 
-function getQuestions(lessonId: string): Question[] | null {
-  const moduleId = lessonId.split('-')[0];
-  const data = quizData as Record<string, Record<string, Question[]>>;
-  return data[moduleId]?.[lessonId] ?? null;
+function getQuestions(moduleId: number): Question[] | null {
+  const data = quizData as Record<string, Question[]>;
+  return data[String(moduleId)] ?? null;
 }
 
-function getBestScore(lessonId: string): number | null {
+function getBestScore(moduleId: number): number | null {
   try {
-    const raw = localStorage.getItem(STORAGE_PREFIX + lessonId);
+    const raw = localStorage.getItem(STORAGE_PREFIX + moduleId);
     return raw !== null ? Number(raw) : null;
   } catch {
     return null;
   }
 }
 
-function saveBestScore(lessonId: string, score: number) {
+function saveBestScore(moduleId: number, score: number) {
   try {
-    const current = getBestScore(lessonId);
+    const current = getBestScore(moduleId);
     if (current === null || score > current) {
-      localStorage.setItem(STORAGE_PREFIX + lessonId, String(score));
+      localStorage.setItem(STORAGE_PREFIX + moduleId, String(score));
     }
   } catch {
     // ignore
   }
 }
 
-export default function Quiz({ lessonId }: Props) {
-  const questions = getQuestions(lessonId);
+export default function Quiz({ moduleId }: Props) {
+  const questions = getQuestions(moduleId);
 
   const [current, setCurrent] = useState(0);
   const [selected, setSelected] = useState<number | null>(null);
@@ -55,8 +54,8 @@ export default function Quiz({ lessonId }: Props) {
   const [bestScore, setBestScore] = useState<number | null>(null);
 
   useEffect(() => {
-    setBestScore(getBestScore(lessonId));
-  }, [lessonId]);
+    setBestScore(getBestScore(moduleId));
+  }, [moduleId]);
 
   if (!questions || questions.length === 0) {
     return null;
@@ -82,8 +81,8 @@ export default function Quiz({ lessonId }: Props) {
 
     if (current + 1 >= total) {
       const finalScore = newScores.filter(Boolean).length;
-      saveBestScore(lessonId, finalScore);
-      setBestScore(getBestScore(lessonId));
+      saveBestScore(moduleId, finalScore);
+      setBestScore(getBestScore(moduleId));
       setScores(newScores);
       setFinished(true);
     } else {

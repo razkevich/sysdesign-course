@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { courseData, type Module } from '../data/course';
 import { getModuleProgress } from '../lib/storage';
+import quizData from '../data/quizzes.json';
 
 export default function ModuleCardsGrid() {
   const [progressMap, setProgressMap] = useState<Record<number, { completed: number; total: number }>>({});
@@ -37,8 +38,14 @@ export default function ModuleCardsGrid() {
             <h3 className="text-sm font-semibold text-text-primary mb-2 line-clamp-2 leading-snug">
               {module.title}
             </h3>
-            <p className="text-xs text-text-muted mb-4">
-              {module.lessons.length} уроков
+            <p className="text-xs text-text-muted mb-4 flex items-center gap-2">
+              <span>{module.lessons.length} уроков</span>
+              {Array.isArray((quizData as Record<string, unknown[]>)[String(module.id)]) &&
+                (quizData as Record<string, unknown[]>)[String(module.id)].length > 0 && (
+                <span className="text-xs px-1.5 py-0.5 rounded bg-bg-primary text-text-muted">
+                  🧠 Тест
+                </span>
+              )}
             </p>
 
             {/* Progress bar */}
