@@ -2,8 +2,7 @@
 import Layout from '../layouts/Layout.astro';
 import Navbar from '../components/Navbar.astro';
 import Hero from '../components/Hero.astro';
-import StatsBar from '../components/StatsBar.astro';
-import Authors from '../components/Authors.astro';
+import CredibilityBar from '../components/CredibilityBar.astro';
 import IntroVideo from '../components/IntroVideo.astro';
 import ProgramAccordion from '../components/ProgramAccordion';
 import Footer from '../components/Footer.astro';
@@ -16,37 +15,8 @@ import Footer from '../components/Footer.astro';
     <!-- Hero -->
     <Hero />
 
-    <!-- Target audience -->
-    <section class="py-10 border-b border-border">
-      <div class="max-w-4xl mx-auto px-4">
-        <div class="grid sm:grid-cols-2 gap-6">
-          <div class="flex gap-4">
-            <div class="shrink-0 w-10 h-10 rounded-lg bg-accent-indigo/10 flex items-center justify-center text-lg">
-              💼
-            </div>
-            <div>
-              <h3 class="text-sm font-semibold text-text-primary mb-1">Готовитесь к собеседованию?</h3>
-              <p class="text-sm text-text-muted leading-relaxed">Структурированная подготовка к System Design интервью в топовых российских и международных IT-компаниях</p>
-            </div>
-          </div>
-          <div class="flex gap-4">
-            <div class="shrink-0 w-10 h-10 rounded-lg bg-accent-purple/10 flex items-center justify-center text-lg">
-              🏗️
-            </div>
-            <div>
-              <h3 class="text-sm font-semibold text-text-primary mb-1">Хотите расти как архитектор?</h3>
-              <p class="text-sm text-text-muted leading-relaxed">Углублённое изучение проектирования высоконагруженных систем для инженеров уровня Senior и выше</p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Authors (compact bar) -->
-    <Authors />
-
-    <!-- Stats bar -->
-    <StatsBar />
+    <!-- Authors + Stats merged -->
+    <CredibilityBar />
 
     <!-- Intro video -->
     <IntroVideo />
