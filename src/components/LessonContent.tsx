@@ -69,7 +69,7 @@ export default function LessonContent({ lesson, module }: Props) {
   ];
 
   return (
-    <div>
+    <div data-hydrated>
       {/* Tab bar */}
       <div className="flex gap-1 mt-6">
         {tabs.map((tab) => (
