@@ -3,9 +3,10 @@ import type { Problem } from '../data/course';
 
 interface Props {
   problem: Problem;
+  highlight?: boolean;
 }
 
-const { problem } = Astro.props;
+const { problem, highlight = false } = Astro.props;
 ---
 
 <a
@@ -22,7 +23,7 @@ const { problem } = Astro.props;
   <!-- Text -->
   <div class="min-w-0">
     <p class="text-sm font-semibold text-text-primary leading-snug">
-      {problem.title}
+      {highlight && <span>🔥 </span>}{problem.title}
     </p>
     <p class="text-xs text-text-muted mt-0.5">Разбор кейса · Видео</p>
   </div>

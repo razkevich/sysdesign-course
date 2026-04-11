@@ -5,6 +5,11 @@ import ModuleCardsGrid from '../components/ModuleCardsGrid';
 import ProblemCard from '../components/ProblemCard.astro';
 import Footer from '../components/Footer.astro';
 import { courseData } from '../data/course';
+
+const orderedProblems = [
+  courseData.problems.find((p) => p.id === 'approach')!,
+  ...courseData.problems.filter((p) => p.id !== 'approach'),
+];
 ---
 
 <Layout title="Материалы курса">
@@ -34,8 +39,10 @@ import { courseData } from '../data/course';
           <p class="text-text-secondary">Реальные задачи системного проектирования с детальным разбором</p>
         </div>
         <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {courseData.problems.map((problem) => (
-            <ProblemCard problem={problem} />
+          {orderedProblems.map((problem, idx) => (
+            <div class={idx === 0 ? 'ring-1 ring-accent-indigo/40 rounded-xl' : ''}>
+              <ProblemCard problem={problem} highlight={idx === 0} />
+            </div>
           ))}
         </div>
       </div>

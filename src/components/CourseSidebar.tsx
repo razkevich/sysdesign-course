@@ -221,8 +221,12 @@ export default function CourseSidebar({ currentPath }: Props) {
             <p className="text-xs font-semibold text-text-muted uppercase tracking-wider px-2 mb-1">
               Разбор кейсов
             </p>
-            {courseData.problems.map((problem) => {
+            {[
+              courseData.problems.find((p) => p.id === 'approach')!,
+              ...courseData.problems.filter((p) => p.id !== 'approach'),
+            ].map((problem) => {
               const active = isCurrentCase(problem.id);
+              const isApproach = problem.id === 'approach';
               return (
                 <a
                   key={problem.id}
@@ -233,7 +237,7 @@ export default function CourseSidebar({ currentPath }: Props) {
                       : 'text-text-muted hover:text-text-primary hover:bg-white/5'
                   }`}
                 >
-                  <span className="text-text-muted shrink-0">▶</span>
+                  <span className="shrink-0">{isApproach ? '🔥' : '▶'}</span>
                   <span className="truncate">{problem.title}</span>
                 </a>
               );
