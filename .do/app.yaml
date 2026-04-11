@@ -1,0 +1,9 @@
+name: sysdesign-course
+static_sites:
+  - name: web
+    build_command: npm run build
+    output_dir: dist
+    environment_slug: node-js
+    routes:
+      - path: /
+    source_dir: /
