@@ -215,7 +215,7 @@ Note: Lesson titles above are best guesses from module descriptions and PDF nami
 
 Videos: `https://sysdesign-course-videos.ams3.digitaloceanspaces.com/{lesson-id}.mp4`
 - Exception: intro video is `intro.mp4`
-- Problem videos: Not yet on Spaces (exist in Google Drive `course/videos_problems/`). Need to upload to `sysdesign-course-videos.ams3.digitaloceanspaces.com/problems/` before launch.
+- Problem videos: `https://sysdesign-course-videos.ams3.digitaloceanspaces.com/problems/{filename}.mp4` (airbnb, messenger, notification_service, url_shortener, approach)
 
 PDFs: `https://mycourse.sysdesign.online/pdfviewer.php?file=https://gammapdf.ams3.digitaloceanspaces.com/{lesson-id}.pdf`
 
