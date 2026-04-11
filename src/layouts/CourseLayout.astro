@@ -1,0 +1,27 @@
+---
+import Layout from './Layout.astro';
+import Navbar from '../components/Navbar.astro';
+import Footer from '../components/Footer.astro';
+import CourseSidebar from '../components/CourseSidebar';
+
+interface Props {
+  title: string;
+  description?: string;
+}
+
+const { title, description } = Astro.props;
+const currentPath = Astro.url.pathname;
+---
+
+<Layout title={title} description={description}>
+  <Navbar />
+  <div class="flex min-h-[calc(100vh-57px)]">
+    <CourseSidebar client:load currentPath={currentPath} />
+    <main class="flex-1 min-w-0 px-4 py-10">
+      <div class="max-w-4xl mx-auto">
+        <slot />
+      </div>
+    </main>
+  </div>
+  <Footer />
+</Layout>

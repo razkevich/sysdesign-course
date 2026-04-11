@@ -1,7 +1,5 @@
 ---
-import Layout from '../../layouts/Layout.astro';
-import Navbar from '../../components/Navbar.astro';
-import Footer from '../../components/Footer.astro';
+import CourseLayout from '../../layouts/CourseLayout.astro';
 import LessonList from '../../components/LessonList';
 import { courseData, getModuleById } from '../../data/course';
 import quizData from '../../data/quizzes.json';
@@ -23,52 +21,46 @@ const quizQuestions = (quizData as Record<string, unknown[]>)[String(module.id)]
 const hasModuleQuiz = Array.isArray(quizQuestions) && quizQuestions.length > 0;
 ---
 
-<Layout title={`Модуль ${module.id}: ${module.title}`}>
-  <Navbar />
+<CourseLayout title={`Модуль ${module.id}: ${module.title}`}>
+  <!-- Back link -->
+  <a
+    href="/"
+    class="inline-flex items-center gap-1.5 text-sm text-text-muted hover:text-text-primary transition-colors mb-8"
+  >
+    ← Все модули
+  </a>
 
-  <main class="max-w-3xl mx-auto px-4 py-12">
-    <!-- Back link -->
+  <!-- Module number -->
+  <p
+    class="text-xs font-bold uppercase tracking-wider mb-2"
+    style={`color: ${module.color}`}
+  >
+    Модуль {module.id < 10 ? `0${module.id}` : module.id}
+  </p>
+
+  <!-- Module title -->
+  <h1 class="text-3xl font-bold text-text-primary mb-4">
+    {module.title}
+  </h1>
+
+  <!-- Module description -->
+  <p class="text-text-secondary mb-10">
+    {module.lessons.length} уроков · видео и PDF-материалы
+  </p>
+
+  <!-- Lesson list -->
+  <LessonList client:load lessons={module.lessons} moduleColor={module.color} />
+
+  {hasModuleQuiz && (
     <a
-      href="/"
-      class="inline-flex items-center gap-1.5 text-sm text-text-muted hover:text-text-primary transition-colors mb-8"
+      href={`/quiz/${module.id}`}
+      class="mt-10 flex items-center justify-between rounded-xl border border-border bg-bg-secondary/30 p-5 hover:bg-bg-secondary/60 transition-colors group"
     >
-      ← Все модули
+      <div>
+        <div class="text-sm font-semibold text-text-primary">🧠 Тест по модулю</div>
+        <div class="text-xs text-text-muted mt-1">{quizQuestions.length} вопросов · Проверьте свои знания</div>
+      </div>
+      <span class="text-text-muted group-hover:text-accent-indigo transition-colors">→</span>
     </a>
-
-    <!-- Module number -->
-    <p
-      class="text-xs font-bold uppercase tracking-wider mb-2"
-      style={`color: ${module.color}`}
-    >
-      Модуль {module.id < 10 ? `0${module.id}` : module.id}
-    </p>
-
-    <!-- Module title -->
-    <h1 class="text-3xl font-bold text-text-primary mb-4">
-      {module.title}
-    </h1>
-
-    <!-- Module description -->
-    <p class="text-text-secondary mb-10">
-      {module.lessons.length} уроков · видео и PDF-материалы
-    </p>
-
-    <!-- Lesson list -->
-    <LessonList client:load lessons={module.lessons} moduleColor={module.color} />
-
-    {hasModuleQuiz && (
-      <a
-        href={`/quiz/${module.id}`}
-        class="mt-10 flex items-center justify-between rounded-xl border border-border bg-bg-secondary/30 p-5 hover:bg-bg-secondary/60 transition-colors group"
-      >
-        <div>
-          <div class="text-sm font-semibold text-text-primary">🧠 Тест по модулю</div>
-          <div class="text-xs text-text-muted mt-1">{quizQuestions.length} вопросов · Проверьте свои знания</div>
-        </div>
-        <span class="text-text-muted group-hover:text-accent-indigo transition-colors">→</span>
-      </a>
-    )}
-  </main>
-
-  <Footer />
-</Layout>
+  )}
+</CourseLayout>

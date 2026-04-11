@@ -1,7 +1,5 @@
 ---
-import Layout from '../../layouts/Layout.astro';
-import Navbar from '../../components/Navbar.astro';
-import Footer from '../../components/Footer.astro';
+import CourseLayout from '../../layouts/CourseLayout.astro';
 import LessonContent from '../../components/LessonContent';
 import { courseData, getLessonById } from '../../data/course';
 
@@ -23,40 +21,34 @@ const lessonIndex = module.lessons.findIndex((l) => l.id === lesson.id) + 1;
 const totalLessons = module.lessons.length;
 ---
 
-<Layout title={lesson.title}>
-  <Navbar />
+<CourseLayout title={lesson.title}>
+  <!-- Breadcrumbs -->
+  <nav class="flex items-center gap-1.5 text-sm text-text-muted mb-6 flex-wrap">
+    <a href="/" class="hover:text-text-primary transition-colors">Главная</a>
+    <span>/</span>
+    <a href={`/module/${module.id}`} class="hover:text-text-primary transition-colors">
+      Модуль {module.id}
+    </a>
+    <span>/</span>
+    <span class="text-text-secondary">Урок {module.id}-{lessonIndex}</span>
+  </nav>
 
-  <main class="max-w-4xl mx-auto px-4 py-10">
-    <!-- Breadcrumbs -->
-    <nav class="flex items-center gap-1.5 text-sm text-text-muted mb-6 flex-wrap">
-      <a href="/" class="hover:text-text-primary transition-colors">Главная</a>
-      <span>/</span>
-      <a href={`/module/${module.id}`} class="hover:text-text-primary transition-colors">
-        Модуль {module.id}
-      </a>
-      <span>/</span>
-      <span class="text-text-secondary">Урок {module.id}-{lessonIndex}</span>
-    </nav>
+  <!-- Module label + lesson count -->
+  <div class="flex items-center gap-3 mb-3">
+    <p
+      class="text-xs font-bold uppercase tracking-wider"
+      style={`color: ${module.color}`}
+    >
+      Модуль {module.id < 10 ? `0${module.id}` : module.id}
+    </p>
+    <span class="text-xs text-text-muted">Урок {lessonIndex} из {totalLessons}</span>
+  </div>
 
-    <!-- Module label + lesson count -->
-    <div class="flex items-center gap-3 mb-3">
-      <p
-        class="text-xs font-bold uppercase tracking-wider"
-        style={`color: ${module.color}`}
-      >
-        Модуль {module.id < 10 ? `0${module.id}` : module.id}
-      </p>
-      <span class="text-xs text-text-muted">Урок {lessonIndex} из {totalLessons}</span>
-    </div>
+  <!-- Lesson title -->
+  <h1 class="text-2xl sm:text-3xl font-bold text-text-primary">
+    {lesson.title}
+  </h1>
 
-    <!-- Lesson title -->
-    <h1 class="text-2xl sm:text-3xl font-bold text-text-primary">
-      {lesson.title}
-    </h1>
-
-    <!-- Interactive lesson content -->
-    <LessonContent client:load lesson={lesson} module={module} />
-  </main>
-
-  <Footer />
-</Layout>
+  <!-- Interactive lesson content -->
+  <LessonContent client:load lesson={lesson} module={module} />
+</CourseLayout>

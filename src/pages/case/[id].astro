@@ -1,7 +1,5 @@
 ---
-import Layout from '../../layouts/Layout.astro';
-import Navbar from '../../components/Navbar.astro';
-import Footer from '../../components/Footer.astro';
+import CourseLayout from '../../layouts/CourseLayout.astro';
 import CaseContent from '../../components/CaseContent';
 import { courseData, getProblemById } from '../../data/course';
 
@@ -17,32 +15,26 @@ if (!problem) {
 }
 ---
 
-<Layout title={problem.title}>
-  <Navbar />
+<CourseLayout title={problem.title}>
+  <!-- Breadcrumbs -->
+  <nav class="flex items-center gap-1.5 text-sm text-text-muted mb-6 flex-wrap">
+    <a href="/" class="hover:text-text-primary transition-colors">Главная</a>
+    <span>/</span>
+    <span class="hover:text-text-primary transition-colors">Разбор кейсов</span>
+    <span>/</span>
+    <span class="text-text-secondary">{problem.title}</span>
+  </nav>
 
-  <main class="max-w-4xl mx-auto px-4 py-10">
-    <!-- Breadcrumbs -->
-    <nav class="flex items-center gap-1.5 text-sm text-text-muted mb-6 flex-wrap">
-      <a href="/" class="hover:text-text-primary transition-colors">Главная</a>
-      <span>/</span>
-      <span class="hover:text-text-primary transition-colors">Разбор кейсов</span>
-      <span>/</span>
-      <span class="text-text-secondary">{problem.title}</span>
-    </nav>
+  <!-- Case label -->
+  <p class="text-xs font-bold uppercase tracking-wider text-accent-indigo mb-3">
+    Разбор кейса
+  </p>
 
-    <!-- Case label -->
-    <p class="text-xs font-bold uppercase tracking-wider text-accent-indigo mb-3">
-      Разбор кейса
-    </p>
+  <!-- Case title -->
+  <h1 class="text-2xl sm:text-3xl font-bold text-text-primary">
+    {problem.title}
+  </h1>
 
-    <!-- Case title -->
-    <h1 class="text-2xl sm:text-3xl font-bold text-text-primary">
-      {problem.title}
-    </h1>
-
-    <!-- Interactive case content -->
-    <CaseContent client:load problem={problem} />
-  </main>
-
-  <Footer />
-</Layout>
+  <!-- Interactive case content -->
+  <CaseContent client:load problem={problem} />
+</CourseLayout>

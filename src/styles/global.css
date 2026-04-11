@@ -35,6 +35,12 @@ body {
   border-radius: 4px;
 }
 
+/* Sidebar backdrop */
+.sidebar-backdrop {
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(2px);
+}
+
 /* PDF viewer dark theme overrides */
 .rpv-core__viewer {
   background-color: var(--color-bg-primary) !important;
