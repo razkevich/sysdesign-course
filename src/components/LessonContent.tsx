@@ -1,13 +1,21 @@
 import { useState, useEffect } from 'react';
 import { type Lesson, type Module, getVideoUrl, getPdfUrl, getAdjacentLessons } from '../data/course';
 import { isCompleted, toggleCompleted, isBookmarked, toggleBookmark, getNote, setNote } from '../lib/storage';
+import Quiz from './Quiz';
+import quizData from '../data/quizzes.json';
 
 interface Props {
   lesson: Lesson;
   module: Module;
 }
 
-type Tab = 'video' | 'pdf' | 'notes';
+type Tab = 'video' | 'pdf' | 'notes' | 'quiz';
+
+function hasQuiz(lessonId: string): boolean {
+  const moduleId = lessonId.split('-')[0];
+  const data = quizData as Record<string, Record<string, unknown>>;
+  return !!(data[moduleId]?.[lessonId]);
+}
 
 export default function LessonContent({ lesson, module }: Props) {
   const defaultTab: Tab = lesson.hasVideo ? 'video' : 'pdf';
@@ -45,6 +53,7 @@ export default function LessonContent({ lesson, module }: Props) {
     ...(lesson.hasVideo ? [{ key: 'video' as Tab, label: 'Видео' }] : []),
     ...(lesson.hasPdf ? [{ key: 'pdf' as Tab, label: 'PDF' }] : []),
     { key: 'notes', label: 'Заметки' },
+    ...(hasQuiz(lesson.id) ? [{ key: 'quiz' as Tab, label: '🧠 Квиз' }] : []),
   ];
 
   return (
@@ -92,6 +101,10 @@ export default function LessonContent({ lesson, module }: Props) {
             value={noteText}
             onChange={handleNoteChange}
           />
+        )}
+
+        {activeTab === 'quiz' && (
+          <Quiz lessonId={lesson.id} />
         )}
       </div>
 

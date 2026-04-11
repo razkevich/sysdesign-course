@@ -1,6 +1,13 @@
 import { useState, useEffect } from 'react';
 import { type Lesson } from '../data/course';
 import { isCompleted, getModuleProgress } from '../lib/storage';
+import quizData from '../data/quizzes.json';
+
+function hasQuiz(lessonId: string): boolean {
+  const moduleId = lessonId.split('-')[0];
+  const data = quizData as Record<string, Record<string, unknown>>;
+  return !!(data[moduleId]?.[lessonId]);
+}
 
 interface Props {
   lessons: Lesson[];
@@ -94,6 +101,11 @@ export default function LessonList({ lessons, moduleColor }: Props) {
                   {lesson.hasPdf && (
                     <span className="text-xs text-text-muted px-1.5 py-0.5 rounded bg-bg-primary">
                       PDF
+                    </span>
+                  )}
+                  {hasQuiz(lesson.id) && (
+                    <span className="text-xs px-1.5 py-0.5 rounded bg-bg-primary" title="Есть квиз">
+                      🧠
                     </span>
                   )}
                 </span>
