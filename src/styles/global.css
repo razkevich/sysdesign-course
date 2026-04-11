@@ -35,6 +35,11 @@ body {
   border-radius: 4px;
 }
 
+/* Anchor offset for sticky navbar */
+[id] {
+  scroll-margin-top: 70px;
+}
+
 /* Sidebar backdrop */
 .sidebar-backdrop {
   background: rgba(0, 0, 0, 0.5);
