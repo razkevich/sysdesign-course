@@ -34,3 +34,33 @@ body {
   background: var(--color-bg-tertiary);
   border-radius: 4px;
 }
+
+/* PDF viewer dark theme overrides */
+.rpv-core__viewer {
+  background-color: var(--color-bg-primary) !important;
+}
+
+.rpv-default-layout__toolbar {
+  background-color: var(--color-bg-secondary) !important;
+  border-bottom: 1px solid var(--color-border) !important;
+}
+
+.rpv-default-layout__sidebar {
+  background-color: var(--color-bg-secondary) !important;
+  border-right: 1px solid var(--color-border) !important;
+}
+
+.rpv-core__icon,
+.rpv-toolbar__item button,
+.rpv-default-layout__toolbar button {
+  color: var(--color-text-secondary) !important;
+}
+
+.rpv-core__icon:hover,
+.rpv-toolbar__item button:hover {
+  color: var(--color-text-primary) !important;
+}
+
+.rpv-default-layout__body {
+  background-color: var(--color-bg-primary) !important;
+}

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { type Lesson, type Module, getVideoUrl, getPdfUrl, getAdjacentLessons } from '../data/course';
+import { type Lesson, type Module, getVideoUrl, getDirectPdfUrl, getAdjacentLessons } from '../data/course';
+import PdfViewer from './PdfViewer';
 import { isCompleted, toggleCompleted, isBookmarked, toggleBookmark, getNote, setNote } from '../lib/storage';
 
 interface Props {
@@ -78,11 +79,7 @@ export default function LessonContent({ lesson, module }: Props) {
         )}
 
         {activeTab === 'pdf' && lesson.hasPdf && (
-          <iframe
-            className="w-full rounded-lg"
-            style={{ aspectRatio: '4/3' }}
-            src={getPdfUrl(lesson.id)}
-          />
+          <PdfViewer url={getDirectPdfUrl(lesson.id)} />
         )}
 
         {activeTab === 'notes' && (

@@ -45,6 +45,10 @@ export function getPdfUrl(lessonId: string): string {
   return `${PDF_VIEWER}?file=${encoded}`;
 }
 
+export function getDirectPdfUrl(lessonId: string): string {
+  return `${PDF_BASE}/${lessonId}.pdf`;
+}
+
 // Data query helpers
 export function getModuleById(moduleId: number): Module | undefined {
   return courseData.modules.find((m) => m.id === moduleId);
