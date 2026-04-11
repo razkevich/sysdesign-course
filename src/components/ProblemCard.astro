@@ -1,19 +1,15 @@
 ---
 import type { Problem } from '../data/course';
-import { getProblemVideoUrl } from '../data/course';
 
 interface Props {
   problem: Problem;
 }
 
 const { problem } = Astro.props;
-const videoUrl = getProblemVideoUrl(problem.id);
 ---
 
 <a
-  href={videoUrl}
-  target="_blank"
-  rel="noopener noreferrer"
+  href={`/case/${problem.id}`}
   class="flex items-center gap-4 rounded-xl border border-border bg-bg-secondary p-4 hover:border-accent-indigo/50 transition-colors group"
 >
   <!-- Play icon -->

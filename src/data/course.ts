@@ -75,6 +75,20 @@ export function getTotalLessons(): number {
   return courseData.modules.reduce((sum, m) => sum + m.lessons.length, 0);
 }
 
+export function getProblemById(problemId: string): Problem | undefined {
+  return courseData.problems.find((p) => p.id === problemId);
+}
+
+export function getAdjacentProblems(problemId: string): { prev: Problem | null; next: Problem | null } {
+  const problems = courseData.problems;
+  const idx = problems.findIndex((p) => p.id === problemId);
+  if (idx === -1) return { prev: null, next: null };
+  return {
+    prev: idx > 0 ? problems[idx - 1] : null,
+    next: idx < problems.length - 1 ? problems[idx + 1] : null,
+  };
+}
+
 // Course data
 export const courseData: CourseData = {
   modules: [
