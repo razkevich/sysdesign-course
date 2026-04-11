@@ -1,0 +1,33 @@
+---
+import type { Problem } from '../data/course';
+import { getProblemVideoUrl } from '../data/course';
+
+interface Props {
+  problem: Problem;
+}
+
+const { problem } = Astro.props;
+const videoUrl = getProblemVideoUrl(problem.id);
+---
+
+<a
+  href={videoUrl}
+  target="_blank"
+  rel="noopener noreferrer"
+  class="flex items-center gap-4 rounded-xl border border-border bg-bg-secondary p-4 hover:border-accent-indigo/50 transition-colors group"
+>
+  <!-- Play icon -->
+  <div class="shrink-0 w-10 h-10 rounded-full bg-accent-indigo/15 flex items-center justify-center group-hover:bg-accent-indigo/25 transition-colors">
+    <svg class="w-4 h-4 text-accent-indigo" fill="currentColor" viewBox="0 0 20 20">
+      <path d="M6.3 2.841A1.5 1.5 0 004 4.11v11.78a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
+    </svg>
+  </div>
+
+  <!-- Text -->
+  <div class="min-w-0">
+    <p class="text-sm font-semibold text-text-primary leading-snug">
+      {problem.title}
+    </p>
+    <p class="text-xs text-text-muted mt-0.5">Разбор кейса · Видео</p>
+  </div>
+</a>

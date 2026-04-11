@@ -1,15 +1,62 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import Navbar from '../components/Navbar.astro';
+import Hero from '../components/Hero.astro';
+import StatsBar from '../components/StatsBar.astro';
+import ModuleCardsGrid from '../components/ModuleCardsGrid';
+import ProblemCard from '../components/ProblemCard.astro';
+import Authors from '../components/Authors.astro';
 import Footer from '../components/Footer.astro';
+import { courseData } from '../data/course';
 ---
 
 <Layout title="Проектирование высоконагруженных систем">
   <Navbar />
-  <main class="max-w-6xl mx-auto px-4 py-16">
-    <h1 class="text-4xl font-bold text-text-primary">
-      Проектирование высоконагруженных систем
-    </h1>
+
+  <main>
+    <!-- Hero -->
+    <Hero />
+
+    <!-- Stats bar -->
+    <StatsBar />
+
+    <!-- Program section -->
+    <section id="program" class="py-16">
+      <div class="max-w-6xl mx-auto px-4">
+        <div class="text-center mb-10">
+          <h2 class="text-2xl sm:text-3xl font-bold text-text-primary mb-3">
+            Программа курса
+          </h2>
+          <p class="text-text-secondary max-w-xl mx-auto">
+            Структурированная программа от основ до продвинутых тем — с видео и PDF-материалами
+          </p>
+        </div>
+        <ModuleCardsGrid client:load />
+      </div>
+    </section>
+
+    <!-- Problems section -->
+    <section class="py-16 border-t border-border">
+      <div class="max-w-6xl mx-auto px-4">
+        <div class="text-center mb-10">
+          <h2 class="text-2xl sm:text-3xl font-bold text-text-primary mb-3">
+            Разбор кейсов
+          </h2>
+          <p class="text-text-secondary max-w-xl mx-auto">
+            Реальные задачи системного проектирования с детальным разбором
+          </p>
+        </div>
+        <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {courseData.problems.map((problem) => (
+            <ProblemCard problem={problem} />
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <!-- Authors -->
+    <Authors />
   </main>
+
   <Footer />
 </Layout>

@@ -1,0 +1,53 @@
+---
+import { getTotalLessons, courseData } from '../data/course';
+
+const totalLessons = getTotalLessons();
+const totalModules = courseData.modules.length;
+---
+
+<section class="bg-gradient-to-b from-bg-primary to-bg-secondary py-16 sm:py-24">
+  <div class="max-w-4xl mx-auto px-4 text-center">
+    <p class="text-xs font-semibold uppercase tracking-widest text-accent-indigo mb-4">
+      Бесплатный курс · Open Source
+    </p>
+
+    <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-text-primary mb-6">
+      System Design
+    </h1>
+
+    <p class="text-lg text-text-secondary max-w-2xl mx-auto mb-8">
+      Проектирование высоконагруженных систем — от основ архитектуры до распределённых систем и безопасности
+    </p>
+
+    <!-- Badges -->
+    <div class="flex flex-wrap justify-center gap-3 mb-10">
+      <span class="px-3 py-1 rounded-full text-sm font-medium bg-accent-indigo/15 text-accent-indigo">
+        {totalLessons} уроков
+      </span>
+      <span class="px-3 py-1 rounded-full text-sm font-medium bg-accent-purple/15 text-accent-purple">
+        {totalModules} модулей
+      </span>
+      <span class="px-3 py-1 rounded-full text-sm font-medium bg-accent-emerald/15 text-accent-emerald">
+        Видео + PDF
+      </span>
+    </div>
+
+    <!-- CTA Buttons -->
+    <div class="flex flex-col sm:flex-row justify-center gap-4">
+      <a
+        href="#program"
+        class="px-6 py-3 rounded-lg font-semibold text-white bg-gradient-to-r from-accent-indigo to-accent-purple hover:opacity-90 transition-opacity"
+      >
+        Начать обучение →
+      </a>
+      <a
+        href="https://github.com/arazkevich/sysdesign-course"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="px-6 py-3 rounded-lg font-semibold text-text-primary border border-border hover:border-accent-indigo/50 transition-colors"
+      >
+        GitHub ⭐
+      </a>
+    </div>
+  </div>
+</section>
