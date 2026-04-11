@@ -1,7 +1,27 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, lazy, Suspense, Component, type ReactNode } from 'react';
 import { type Lesson, type Module, getVideoUrl, getDirectPdfUrl, getAdjacentLessons } from '../data/course';
-import PdfViewer from './PdfViewer';
 import { isCompleted, toggleCompleted, isBookmarked, toggleBookmark, getNote, setNote } from '../lib/storage';
+
+const PdfViewer = lazy(() => import('./PdfViewer'));
+
+class PdfErrorBoundary extends Component<{ fallbackUrl: string; children: ReactNode }, { hasError: boolean }> {
+  state = { hasError: false };
+  static getDerivedStateFromError() { return { hasError: true }; }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="flex flex-col items-center justify-center py-16 gap-3">
+          <p className="text-sm text-text-muted">Не удалось загрузить PDF-просмотрщик</p>
+          <a href={this.props.fallbackUrl} target="_blank" rel="noopener noreferrer"
+            className="px-4 py-2 text-sm font-medium rounded-lg bg-accent-indigo/15 text-accent-indigo hover:bg-accent-indigo/25 transition-colors">
+            Открыть PDF напрямую ↗
+          </a>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
 
 interface Props {
   lesson: Lesson;
@@ -79,7 +99,15 @@ export default function LessonContent({ lesson, module }: Props) {
         )}
 
         {activeTab === 'pdf' && lesson.hasPdf && (
-          <PdfViewer url={getDirectPdfUrl(lesson.id)} />
+          <PdfErrorBoundary fallbackUrl={getDirectPdfUrl(lesson.id)}>
+            <Suspense fallback={
+              <div className="flex items-center justify-center py-20 text-text-muted text-sm">
+                Загрузка PDF...
+              </div>
+            }>
+              <PdfViewer url={getDirectPdfUrl(lesson.id)} />
+            </Suspense>
+          </PdfErrorBoundary>
         )}
 
         {activeTab === 'notes' && (
