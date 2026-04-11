@@ -1,7 +1,7 @@
 ---
 import CourseLayout from '../../layouts/CourseLayout.astro';
 import LessonContent from '../../components/LessonContent';
-import { courseData, getLessonById, getVideoUrl, getDirectPdfUrl, getAdjacentLessons } from '../../data/course';
+import { courseData, getLessonById } from '../../data/course';
 
 export function getStaticPaths() {
   return courseData.modules.flatMap((m) =>
@@ -19,9 +19,6 @@ if (!result) {
 const { lesson, module } = result;
 const lessonIndex = module.lessons.findIndex((l) => l.id === lesson.id) + 1;
 const totalLessons = module.lessons.length;
-const videoUrl = getVideoUrl(lesson.id);
-const pdfUrl = getDirectPdfUrl(lesson.id);
-const adjacent = getAdjacentLessons(lesson.id);
 ---
 
 <CourseLayout title={lesson.title}>
@@ -52,56 +49,6 @@ const adjacent = getAdjacentLessons(lesson.id);
     {lesson.title}
   </h1>
 
-  <!-- No-JS fallback: always visible, hidden when React hydrates -->
-  <div id="lesson-fallback" class="mt-6">
-    {lesson.hasVideo && (
-      <div class="rounded-lg border border-border bg-bg-secondary p-4 mb-4">
-        <video class="w-full rounded-lg" controls preload="metadata" src={videoUrl}>
-        </video>
-      </div>
-    )}
-    <div class="flex flex-wrap gap-3 mb-4">
-      {lesson.hasPdf && (
-        <a href={pdfUrl} target="_blank" rel="noopener noreferrer"
-          class="px-4 py-2 text-sm font-medium rounded-lg border border-border text-accent-indigo hover:bg-accent-indigo/10 transition-colors">
-          📄 Открыть PDF ↗
-        </a>
-      )}
-    </div>
-    <div class="flex items-center gap-4 text-sm text-text-muted">
-      {adjacent.prev && (
-        <a href={`/lesson/${adjacent.prev.id}`} class="hover:text-text-primary transition-colors">
-          ← {adjacent.prev.title}
-        </a>
-      )}
-      <div class="flex-1" />
-      {adjacent.next && (
-        <a href={`/lesson/${adjacent.next.id}`} class="hover:text-text-primary transition-colors">
-          {adjacent.next.title} →
-        </a>
-      )}
-    </div>
-  </div>
-
-  <!-- Enhanced interactive content (React island) — hides fallback when loaded -->
-  <div id="lesson-interactive" class="hidden">
-    <LessonContent client:idle lesson={lesson} module={module} />
-  </div>
-
-  <script>
-    // When React hydrates, show interactive version and hide fallback
-    const observer = new MutationObserver(() => {
-      const interactive = document.getElementById('lesson-interactive');
-      const fallback = document.getElementById('lesson-fallback');
-      if (interactive && interactive.querySelector('[data-hydrated]')) {
-        interactive.classList.remove('hidden');
-        if (fallback) fallback.classList.add('hidden');
-        observer.disconnect();
-      }
-    });
-    const target = document.getElementById('lesson-interactive');
-    if (target) observer.observe(target, { childList: true, subtree: true, attributes: true });
-    // Timeout: if React doesn't hydrate in 10s, keep fallback visible
-    setTimeout(() => observer.disconnect(), 10000);
-  </script>
+  <!-- Interactive lesson content -->
+  <LessonContent client:load lesson={lesson} module={module} />
 </CourseLayout>

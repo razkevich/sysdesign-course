@@ -16,7 +16,7 @@ const currentPath = Astro.url.pathname;
 <Layout title={title} description={description}>
   <Navbar />
   <div class="flex min-h-[calc(100vh-57px)]">
-    <CourseSidebar client:idle currentPath={currentPath} />
+    <CourseSidebar client:load currentPath={currentPath} />
     <main class="flex-1 min-w-0 px-4 py-10">
       <div class="max-w-4xl mx-auto">
         <slot />
