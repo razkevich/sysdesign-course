@@ -280,6 +280,34 @@ export default function CourseSidebar({ currentPath }: Props) {
             </button>
           );
         })}
+
+        {/* К circle for case studies */}
+        {(() => {
+          const isCaseActive = currentPath.startsWith('/case/');
+          return (
+            <button
+              onClick={() => {
+                setIsOpen(true);
+                try {
+                  localStorage.setItem(SIDEBAR_KEY, 'open');
+                } catch {
+                  // ignore
+                }
+              }}
+              title="Разбор кейсов"
+              className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
+                isCaseActive ? 'ring-2 ring-offset-1 ring-offset-bg-secondary' : 'hover:scale-110'
+              }`}
+              style={{
+                backgroundColor: '#7c83ff33',
+                color: '#7c83ff',
+                ...(isCaseActive ? { '--tw-ring-color': '#7c83ff' } as React.CSSProperties : {}),
+              }}
+            >
+              К
+            </button>
+          );
+        })()}
       </div>
     );
   }
