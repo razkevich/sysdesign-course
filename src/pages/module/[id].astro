@@ -1,0 +1,57 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import Navbar from '../../components/Navbar.astro';
+import Footer from '../../components/Footer.astro';
+import LessonList from '../../components/LessonList';
+import { courseData, getModuleById } from '../../data/course';
+
+export function getStaticPaths() {
+  return courseData.modules.map((m) => ({
+    params: { id: String(m.id) },
+  }));
+}
+
+const { id } = Astro.params;
+const module = getModuleById(Number(id));
+
+if (!module) {
+  return Astro.redirect('/');
+}
+---
+
+<Layout title={`Модуль ${module.id}: ${module.title}`}>
+  <Navbar />
+
+  <main class="max-w-3xl mx-auto px-4 py-12">
+    <!-- Back link -->
+    <a
+      href="/"
+      class="inline-flex items-center gap-1.5 text-sm text-text-muted hover:text-text-primary transition-colors mb-8"
+    >
+      ← Все модули
+    </a>
+
+    <!-- Module number -->
+    <p
+      class="text-xs font-bold uppercase tracking-wider mb-2"
+      style={`color: ${module.color}`}
+    >
+      Модуль {module.id < 10 ? `0${module.id}` : module.id}
+    </p>
+
+    <!-- Module title -->
+    <h1 class="text-3xl font-bold text-text-primary mb-4">
+      {module.title}
+    </h1>
+
+    <!-- Module description -->
+    <p class="text-text-secondary mb-10">
+      {module.lessons.length} уроков · видео и PDF-материалы
+    </p>
+
+    <!-- Lesson list -->
+    <LessonList client:load lessons={module.lessons} moduleColor={module.color} />
+  </main>
+
+  <Footer />
+</Layout>
