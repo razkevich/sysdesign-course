@@ -1,15 +1,15 @@
 ---
-import '../styles/global.css';
+import Layout from '../layouts/Layout.astro';
+import Navbar from '../components/Navbar.astro';
+import Footer from '../components/Footer.astro';
 ---
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>System Design Course</title>
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-  </head>
-  <body>
-    <h1>System Design Course</h1>
-  </body>
-</html>
+
+<Layout title="Проектирование высоконагруженных систем">
+  <Navbar />
+  <main class="max-w-6xl mx-auto px-4 py-16">
+    <h1 class="text-4xl font-bold text-text-primary">
+      Проектирование высоконагруженных систем
+    </h1>
+  </main>
+  <Footer />
+</Layout>
