@@ -1,4 +1,5 @@
 ---
+import SearchWidget from './SearchWidget';
 ---
 
 <header class="sticky top-0 z-50 border-b border-border bg-bg-primary/80 backdrop-blur-md">
@@ -22,13 +23,6 @@
     </div>
 
     <!-- Search -->
-    <form action="/search" method="get" class="ml-auto">
-      <input
-        type="text"
-        name="q"
-        placeholder="Поиск..."
-        class="bg-bg-secondary border border-border rounded-lg px-3 py-1.5 text-sm text-text-secondary placeholder:text-text-muted focus:outline-none focus:border-accent-indigo transition-colors w-40 sm:w-52"
-      />
-    </form>
+    <SearchWidget client:load />
   </nav>
 </header>
