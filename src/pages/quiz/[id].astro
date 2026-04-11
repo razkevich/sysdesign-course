@@ -1,0 +1,65 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import Navbar from '../../components/Navbar.astro';
+import Footer from '../../components/Footer.astro';
+import Quiz from '../../components/Quiz';
+import { courseData, getModuleById } from '../../data/course';
+import quizData from '../../data/quizzes.json';
+
+export function getStaticPaths() {
+  return Object.keys(quizData).map((id) => ({
+    params: { id },
+  }));
+}
+
+const { id } = Astro.params;
+const moduleId = Number(id);
+const module = getModuleById(moduleId);
+
+if (!module) {
+  return Astro.redirect('/');
+}
+
+const quizQuestions = (quizData as Record<string, unknown[]>)[id];
+---
+
+<Layout title={`Тест: Модуль ${id} — ${module.title}`}>
+  <Navbar />
+
+  <main class="max-w-4xl mx-auto px-4 py-10">
+    <!-- Breadcrumbs -->
+    <nav class="flex items-center gap-1.5 text-sm text-text-muted mb-6 flex-wrap">
+      <a href="/" class="hover:text-text-primary transition-colors">Главная</a>
+      <span>/</span>
+      <a href={`/module/${id}`} class="hover:text-text-primary transition-colors">
+        Модуль {id}
+      </a>
+      <span>/</span>
+      <span class="text-text-secondary">Тест</span>
+    </nav>
+
+    <!-- Module label -->
+    <div class="flex items-center gap-3 mb-3">
+      <p
+        class="text-xs font-bold uppercase tracking-wider"
+        style={`color: ${module.color}`}
+      >
+        Модуль {moduleId < 10 ? `0${moduleId}` : moduleId}
+      </p>
+      <span class="text-xs text-text-muted">Тест по модулю</span>
+    </div>
+
+    <!-- Module title -->
+    <h1 class="text-2xl sm:text-3xl font-bold text-text-primary mb-2">
+      {module.title}
+    </h1>
+
+    <!-- Question count -->
+    <p class="text-text-secondary mb-8">{quizQuestions.length} вопросов</p>
+
+    <!-- Quiz component -->
+    <Quiz client:load moduleId={moduleId} />
+  </main>
+
+  <Footer />
+</Layout>
