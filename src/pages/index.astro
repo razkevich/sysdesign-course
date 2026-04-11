@@ -3,11 +3,10 @@ import Layout from '../layouts/Layout.astro';
 import Navbar from '../components/Navbar.astro';
 import Hero from '../components/Hero.astro';
 import StatsBar from '../components/StatsBar.astro';
-import ModuleCardsGrid from '../components/ModuleCardsGrid';
-import ProblemCard from '../components/ProblemCard.astro';
 import Authors from '../components/Authors.astro';
+import IntroVideo from '../components/IntroVideo.astro';
+import ProgramAccordion from '../components/ProgramAccordion';
 import Footer from '../components/Footer.astro';
-import { courseData } from '../data/course';
 ---
 
 <Layout title="Проектирование высоконагруженных систем">
@@ -23,40 +22,33 @@ import { courseData } from '../data/course';
     <!-- Stats bar -->
     <StatsBar />
 
-    <!-- Program section -->
-    <section id="program" class="py-16">
-      <div class="max-w-6xl mx-auto px-4">
-        <div class="text-center mb-10">
-          <h2 class="text-2xl sm:text-3xl font-bold text-text-primary mb-3">
-            Программа курса
-          </h2>
-          <p class="text-text-secondary max-w-xl mx-auto">
+    <!-- Intro video -->
+    <IntroVideo />
+
+    <!-- Program accordion -->
+    <section id="program" class="py-16 border-t border-border">
+      <div class="max-w-4xl mx-auto px-4">
+        <div class="mb-10">
+          <h2 class="text-2xl sm:text-3xl font-bold text-text-primary mb-3">Программа курса</h2>
+          <p class="text-text-secondary">
             Структурированная программа от основ до продвинутых тем — с видео и PDF-материалами
           </p>
         </div>
-        <ModuleCardsGrid client:load />
+        <ProgramAccordion client:load />
       </div>
     </section>
 
-    <!-- Problems section -->
+    <!-- CTA -->
     <section class="py-16 border-t border-border">
-      <div class="max-w-6xl mx-auto px-4">
-        <div class="text-center mb-10">
-          <h2 class="text-2xl sm:text-3xl font-bold text-text-primary mb-3">
-            Разбор кейсов
-          </h2>
-          <p class="text-text-secondary max-w-xl mx-auto">
-            Реальные задачи системного проектирования с детальным разбором
-          </p>
-        </div>
-        <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {courseData.problems.map((problem) => (
-            <ProblemCard problem={problem} />
-          ))}
-        </div>
+      <div class="max-w-4xl mx-auto px-4 text-center">
+        <a
+          href="/course"
+          class="inline-block px-8 py-4 rounded-lg font-semibold text-white bg-gradient-to-r from-accent-indigo to-accent-purple hover:opacity-90 transition-opacity text-lg"
+        >
+          Начать обучение →
+        </a>
       </div>
     </section>
-
   </main>
 
   <Footer />

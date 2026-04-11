@@ -1,8 +1,4 @@
 ---
-import { getTotalLessons, courseData } from '../data/course';
-
-const totalLessons = getTotalLessons();
-const totalModules = courseData.modules.length;
 ---
 
 <section class="bg-gradient-to-b from-bg-primary to-bg-secondary py-16 sm:py-24">
@@ -15,30 +11,14 @@ const totalModules = courseData.modules.length;
       System Design
     </h1>
 
-    <p class="text-lg text-text-secondary max-w-2xl mx-auto mb-8">
+    <p class="text-lg text-text-secondary max-w-2xl mx-auto mb-10">
       Проектирование высоконагруженных систем — от основ архитектуры до распределённых систем и безопасности
     </p>
-
-    <!-- Badges -->
-    <div class="flex flex-wrap justify-center gap-3 mb-10">
-      <span class="px-3 py-1 rounded-full text-sm font-medium bg-accent-indigo/15 text-accent-indigo">
-        {totalLessons} уроков
-      </span>
-      <span class="px-3 py-1 rounded-full text-sm font-medium bg-accent-purple/15 text-accent-purple">
-        {totalModules} модулей
-      </span>
-      <span class="px-3 py-1 rounded-full text-sm font-medium bg-accent-emerald/15 text-accent-emerald">
-        Видео + PDF
-      </span>
-      <span class="px-3 py-1 rounded-full text-sm font-medium bg-accent-amber/15 text-accent-amber">
-        7 тестов
-      </span>
-    </div>
 
     <!-- CTA Buttons -->
     <div class="flex flex-col sm:flex-row justify-center gap-4">
       <a
-        href="#program"
+        href="/course"
         class="px-6 py-3 rounded-lg font-semibold text-white bg-gradient-to-r from-accent-indigo to-accent-purple hover:opacity-90 transition-opacity"
       >
         Начать обучение →
