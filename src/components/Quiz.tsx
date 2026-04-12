@@ -16,7 +16,15 @@ interface Props {
   moduleId: number;
 }
 
-const STORAGE_PREFIX = 'sysdesign:quiz:module-';
+const SCORE_PREFIX = 'sysdesign:quiz:module-';
+const PROGRESS_PREFIX = 'sysdesign:quiz:progress-';
+
+interface QuizProgress {
+  current: number;
+  scores: boolean[];
+  selected: number | null;
+  checked: boolean;
+}
 
 function getQuestions(moduleId: number): Question[] | null {
   const data = quizData as Record<string, Question[]>;
@@ -25,7 +33,7 @@ function getQuestions(moduleId: number): Question[] | null {
 
 function getBestScore(moduleId: number): number | null {
   try {
-    const raw = localStorage.getItem(STORAGE_PREFIX + moduleId);
+    const raw = localStorage.getItem(SCORE_PREFIX + moduleId);
     return raw !== null ? Number(raw) : null;
   } catch {
     return null;
@@ -36,11 +44,30 @@ function saveBestScore(moduleId: number, score: number) {
   try {
     const current = getBestScore(moduleId);
     if (current === null || score > current) {
-      localStorage.setItem(STORAGE_PREFIX + moduleId, String(score));
+      localStorage.setItem(SCORE_PREFIX + moduleId, String(score));
     }
+  } catch {}
+}
+
+function getProgress(moduleId: number): QuizProgress | null {
+  try {
+    const raw = localStorage.getItem(PROGRESS_PREFIX + moduleId);
+    return raw ? JSON.parse(raw) : null;
   } catch {
-    // ignore
+    return null;
   }
+}
+
+function saveProgress(moduleId: number, progress: QuizProgress) {
+  try {
+    localStorage.setItem(PROGRESS_PREFIX + moduleId, JSON.stringify(progress));
+  } catch {}
+}
+
+function clearProgress(moduleId: number) {
+  try {
+    localStorage.removeItem(PROGRESS_PREFIX + moduleId);
+  } catch {}
 }
 
 export default function Quiz({ moduleId }: Props) {
@@ -52,9 +79,18 @@ export default function Quiz({ moduleId }: Props) {
   const [scores, setScores] = useState<boolean[]>([]);
   const [finished, setFinished] = useState(false);
   const [bestScore, setBestScore] = useState<number | null>(null);
+  const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
     setBestScore(getBestScore(moduleId));
+    const saved = getProgress(moduleId);
+    if (saved && questions && saved.current < questions.length) {
+      setCurrent(saved.current);
+      setScores(saved.scores);
+      setSelected(saved.selected);
+      setChecked(saved.checked);
+    }
+    setLoaded(true);
   }, [moduleId]);
 
   if (!questions || questions.length === 0) {
@@ -68,11 +104,13 @@ export default function Quiz({ moduleId }: Props) {
   function handleSelect(index: number) {
     if (checked) return;
     setSelected(index);
+    saveProgress(moduleId, { current, scores, selected: index, checked: false });
   }
 
   function handleCheck() {
     if (selected === null) return;
     setChecked(true);
+    saveProgress(moduleId, { current, scores, selected, checked: true });
   }
 
   function handleNext() {
@@ -85,11 +123,14 @@ export default function Quiz({ moduleId }: Props) {
       setBestScore(getBestScore(moduleId));
       setScores(newScores);
       setFinished(true);
+      clearProgress(moduleId);
     } else {
+      const nextCurrent = current + 1;
       setScores(newScores);
-      setCurrent(current + 1);
+      setCurrent(nextCurrent);
       setSelected(null);
       setChecked(false);
+      saveProgress(moduleId, { current: nextCurrent, scores: newScores, selected: null, checked: false });
     }
   }
 
@@ -99,6 +140,7 @@ export default function Quiz({ moduleId }: Props) {
     setChecked(false);
     setScores([]);
     setFinished(false);
+    clearProgress(moduleId);
   }
 
   if (finished) {
