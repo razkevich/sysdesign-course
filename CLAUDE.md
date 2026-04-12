@@ -26,16 +26,24 @@ Open-source system design course website. Portfolio piece + real educational res
 - **Why Yandex Cloud**: DigitalOcean IPs are often blocked from Russia. Yandex Cloud has Russian datacenters with reliable connectivity.
 - **Note**: VM is preemptible (can be stopped by YC after 24h). If site goes down, restart: `yc compute instance start sysdesign-course`
 
-### DigitalOcean (DNS + content storage)
+### DNS: Yandex Cloud DNS
 
-- **DNS**: sysdesign.online managed by DO nameservers. `course` A record → 111.88.242.35
-- **DO Spaces** (content buckets, AMS3 region):
-  - `sysdesign-course-videos`: lesson videos, intro, problem walkthroughs
-  - `gammapdf`: lesson PDFs (CORS configured for course.sysdesign.online)
-  - Access Key: `REDACTED_DO_SPACES_KEY`, endpoint: `ams3.digitaloceanspaces.com`
+- **Zone**: sysdesign.online (public, managed in YC DNS)
+- **Nameservers**: ns1.yandexcloud.net, ns2.yandexcloud.net (configured in reg.ru registrar)
+- **Key records**: `course` A → 111.88.242.35 (YC VM), `mycourse` A → 146.190.19.161 (DO Moodle droplet)
+
+### Content Storage: Yandex Cloud Object Storage
+
+- **Videos bucket**: `sysdesign-course-videos-yc` (lessons, intro, case studies)
+- **PDFs bucket**: `sysdesign-course-pdfs-yc` (lesson PDFs)
+- **Service account**: `storage-admin`, credentials on YC VM at `~/.aws/credentials` (profile `yc`)
+- **Endpoint**: `https://storage.yandexcloud.net`
+
+### Legacy (DigitalOcean)
+
 - **DO droplet** (146.190.19.161): runs Moodle (mycourse.sysdesign.online). Quiz data was extracted from here.
-
-### Legacy: DO droplet also has the course site deployed (Apache), but DNS no longer points there.
+- **DO Spaces**: old copies of videos/PDFs still exist in `sysdesign-course-videos` and `gammapdf` buckets (can be deleted).
+- Source content also lives in Google Drive as the original source of truth.
 
 ## Tech Stack
 
@@ -57,7 +65,7 @@ Open-source system design course website. Portfolio piece + real educational res
   - CORS configured to allow `https://course.sysdesign.online`
 - **Quizzes**: Extracted from Moodle DB on DO droplet
   - 124 questions across 7 modules, stored in `src/data/quizzes.json`
-  - To re-extract: `ssh root@146.190.19.161 "mysql -u moodleuser -pREDACTED_DB_PASS moodle -e '...'"` (password: `REDACTED_SSH_PASS`)
+  - To re-extract: SSH to DO droplet, query Moodle DB (credentials stored locally, not in repo)
 
 ## Architecture
 

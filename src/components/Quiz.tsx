@@ -111,16 +111,11 @@ export default function Quiz({ moduleId }: Props) {
   function handleSelect(index: number) {
     if (checked) return;
     setSelected(index);
+    setChecked(true);
     const newAnswers = [...answers];
     newAnswers[current] = index;
     setAnswers(newAnswers);
-    persist(current, newAnswers, index, false);
-  }
-
-  function handleCheck() {
-    if (selected === null) return;
-    setChecked(true);
-    persist(current, answers, selected, true);
+    persist(current, newAnswers, index, true);
   }
 
   function goTo(index: number) {
@@ -291,15 +286,6 @@ export default function Quiz({ moduleId }: Props) {
         >
           ← Назад
         </button>
-
-        {!checked && selected !== null && (
-          <button
-            onClick={handleCheck}
-            className="px-4 py-2 text-sm font-semibold rounded-lg bg-gradient-to-r from-indigo-500 to-violet-500 text-white hover:from-indigo-600 hover:to-violet-600 transition-all"
-          >
-            Проверить
-          </button>
-        )}
 
         {checked && current + 1 < total && (
           <button
