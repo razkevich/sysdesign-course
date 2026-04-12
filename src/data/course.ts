@@ -22,27 +22,21 @@ export interface CourseData {
   problems: Problem[];
 }
 
-// Base URLs
-const VIDEOS_BASE = 'https://sysdesign-course-videos.ams3.digitaloceanspaces.com';
-const PDF_VIEWER = 'https://mycourse.sysdesign.online/pdfviewer.php';
-const PDF_BASE = 'https://gammapdf.ams3.digitaloceanspaces.com';
+// Base URLs (Yandex Cloud Object Storage)
+const VIDEOS_BASE = 'https://storage.yandexcloud.net/sysdesign-course-videos-yc';
+const PDF_BASE = 'https://storage.yandexcloud.net/sysdesign-course-pdfs-yc';
 
 // URL helpers
 export function getVideoUrl(lessonId: string): string {
   return `${VIDEOS_BASE}/${lessonId}.mp4`;
 }
 
-export function getIntroVideoUrl(moduleId: number): string {
-  return `${VIDEOS_BASE}/intro-${moduleId}.mp4`;
+export function getIntroVideoUrl(): string {
+  return `${VIDEOS_BASE}/intro.mp4`;
 }
 
 export function getProblemVideoUrl(problemId: string): string {
   return `${VIDEOS_BASE}/problems/${problemId}.mp4`;
-}
-
-export function getPdfUrl(lessonId: string): string {
-  const encoded = encodeURIComponent(`${PDF_BASE}/${lessonId}.pdf`);
-  return `${PDF_VIEWER}?file=${encoded}`;
 }
 
 export function getDirectPdfUrl(lessonId: string): string {
