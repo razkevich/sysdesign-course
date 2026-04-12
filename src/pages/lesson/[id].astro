@@ -1,7 +1,6 @@
 ---
 import CourseLayout from '../../layouts/CourseLayout.astro';
-import LessonContent from '../../components/LessonContent';
-import { courseData, getLessonById } from '../../data/course';
+import { courseData, getLessonById, getVideoUrl, getDirectPdfUrl, getAdjacentLessons } from '../../data/course';
 
 export function getStaticPaths() {
   return courseData.modules.flatMap((m) =>
@@ -19,6 +18,10 @@ if (!result) {
 const { lesson, module } = result;
 const lessonIndex = module.lessons.findIndex((l) => l.id === lesson.id) + 1;
 const totalLessons = module.lessons.length;
+const videoUrl = getVideoUrl(lesson.id);
+const pdfUrl = getDirectPdfUrl(lesson.id);
+const adjacent = getAdjacentLessons(lesson.id);
+const defaultTab = lesson.hasVideo ? 'video' : 'pdf';
 ---
 
 <CourseLayout title={lesson.title}>
@@ -30,25 +33,218 @@ const totalLessons = module.lessons.length;
       Модуль {module.id}
     </a>
     <span>/</span>
-    <span class="text-text-secondary">Урок {module.id}-{lessonIndex}</span>
+    <span class="text-text-secondary">Урок {lesson.id}</span>
   </nav>
 
   <!-- Module label + lesson count -->
   <div class="flex items-center gap-3 mb-3">
-    <p
-      class="text-xs font-bold uppercase tracking-wider"
-      style={`color: ${module.color}`}
-    >
+    <p class="text-xs font-bold uppercase tracking-wider" style={`color: ${module.color}`}>
       Модуль {module.id < 10 ? `0${module.id}` : module.id}
     </p>
     <span class="text-xs text-text-muted">Урок {lessonIndex} из {totalLessons}</span>
   </div>
 
   <!-- Lesson title -->
-  <h1 class="text-2xl sm:text-3xl font-bold text-text-primary">
-    {lesson.title}
-  </h1>
+  <h1 class="text-2xl sm:text-3xl font-bold text-text-primary">{lesson.title}</h1>
 
-  <!-- Interactive lesson content -->
-  <LessonContent client:load lesson={lesson} module={module} />
+  <!-- Pure CSS Tabs -->
+  <div class="lesson-tabs mt-6">
+    <!-- Hidden radio inputs -->
+    {lesson.hasVideo && (
+      <input type="radio" name="tab" id="tab-video" class="hidden" checked={defaultTab === 'video'} />
+    )}
+    {lesson.hasPdf && (
+      <input type="radio" name="tab" id="tab-pdf" class="hidden" checked={defaultTab === 'pdf'} />
+    )}
+    <input type="radio" name="tab" id="tab-notes" class="hidden" />
+
+    <!-- Tab labels -->
+    <div class="flex gap-1">
+      {lesson.hasVideo && (
+        <label for="tab-video" class="tab-label">Видео</label>
+      )}
+      {lesson.hasPdf && (
+        <label for="tab-pdf" class="tab-label">PDF</label>
+      )}
+      <label for="tab-notes" class="tab-label">Заметки</label>
+    </div>
+
+    <!-- Tab panels -->
+    <div class="rounded-b-lg rounded-tr-lg border border-border bg-bg-secondary">
+      {lesson.hasVideo && (
+        <div class="tab-panel" id="panel-video">
+          <div class="p-4">
+            <video class="w-full rounded-lg" controls preload="metadata" src={videoUrl}></video>
+          </div>
+        </div>
+      )}
+
+      {lesson.hasPdf && (
+        <div class="tab-panel" id="panel-pdf">
+          <div class="p-4">
+            <iframe
+              src={pdfUrl}
+              class="w-full rounded-lg border-0"
+              style="height: 75vh;"
+              title={`PDF: ${lesson.title}`}
+              loading="lazy"
+            ></iframe>
+            <div class="mt-3 text-center">
+              <a href={pdfUrl} target="_blank" rel="noopener noreferrer"
+                class="text-xs text-accent-indigo hover:underline">
+                Открыть PDF в новом окне ↗
+              </a>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div class="tab-panel" id="panel-notes">
+        <div class="p-4">
+          <textarea
+            id="lesson-notes"
+            class="w-full min-h-[200px] bg-bg-primary text-text-primary rounded-lg border border-border p-3 text-sm resize-y focus:outline-none focus:border-accent-indigo"
+            placeholder="Ваши заметки к уроку... (сохраняются в браузере)"
+          ></textarea>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Actions row -->
+  <div class="flex items-center gap-3 mt-4 flex-wrap">
+    <button
+      id="btn-complete"
+      class="px-4 py-2 text-sm font-semibold rounded-lg bg-gradient-to-r from-indigo-500 to-violet-500 text-white hover:from-indigo-600 hover:to-violet-600 transition-all"
+    >
+      ✓ Отметить пройденным
+    </button>
+    <button
+      id="btn-bookmark"
+      class="px-4 py-2 text-sm font-semibold rounded-lg border border-border text-text-muted hover:border-text-primary hover:text-text-primary transition-colors"
+    >
+      ☆ Закладка
+    </button>
+    <div class="flex-1"></div>
+    <div class="flex items-center gap-4 text-sm text-text-muted">
+      {adjacent.prev && (
+        <a href={`/lesson/${adjacent.prev.id}`} class="hover:text-text-primary transition-colors">
+          ← {adjacent.prev.title}
+        </a>
+      )}
+      {adjacent.next && (
+        <a href={`/lesson/${adjacent.next.id}`} class="hover:text-text-primary transition-colors">
+          {adjacent.next.title} →
+        </a>
+      )}
+    </div>
+  </div>
+
+  <!-- Minimal inline JS for localStorage only (no React needed) -->
+  <script define:vars={{ lessonId: lesson.id }}>
+    const KEYS = { progress: 'sysdesign:progress', bookmarks: 'sysdesign:bookmarks', notes: 'sysdesign:notes' };
+    function getJson(k, d) { try { const r = localStorage.getItem(k); return r ? JSON.parse(r) : d; } catch { return d; } }
+    function setJson(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} }
+
+    // Notes
+    const textarea = document.getElementById('lesson-notes');
+    if (textarea) {
+      const notes = getJson(KEYS.notes, {});
+      textarea.value = notes[lessonId] || '';
+      textarea.addEventListener('input', () => {
+        const n = getJson(KEYS.notes, {});
+        if (textarea.value.trim()) n[lessonId] = textarea.value; else delete n[lessonId];
+        setJson(KEYS.notes, n);
+      });
+    }
+
+    // Complete button
+    const btnComplete = document.getElementById('btn-complete');
+    if (btnComplete) {
+      const progress = getJson(KEYS.progress, {});
+      const updateCompleteBtn = (done) => {
+        btnComplete.textContent = done ? '✓ Пройден' : '✓ Отметить пройденным';
+        btnComplete.className = done
+          ? 'px-4 py-2 text-sm font-semibold rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 transition-colors'
+          : 'px-4 py-2 text-sm font-semibold rounded-lg bg-gradient-to-r from-indigo-500 to-violet-500 text-white hover:from-indigo-600 hover:to-violet-600 transition-all';
+      };
+      updateCompleteBtn(!!progress[lessonId]);
+      btnComplete.addEventListener('click', () => {
+        const p = getJson(KEYS.progress, {});
+        if (p[lessonId]) delete p[lessonId]; else p[lessonId] = true;
+        setJson(KEYS.progress, p);
+        updateCompleteBtn(!!p[lessonId]);
+      });
+    }
+
+    // Bookmark button
+    const btnBookmark = document.getElementById('btn-bookmark');
+    if (btnBookmark) {
+      const bookmarks = getJson(KEYS.bookmarks, []);
+      const updateBookmarkBtn = (saved) => {
+        btnBookmark.textContent = saved ? '★ В закладках' : '☆ Закладка';
+        btnBookmark.className = saved
+          ? 'px-4 py-2 text-sm font-semibold rounded-lg border border-amber-500 text-amber-500 hover:bg-amber-500 hover:text-white transition-colors'
+          : 'px-4 py-2 text-sm font-semibold rounded-lg border border-border text-text-muted hover:border-text-primary hover:text-text-primary transition-colors';
+      };
+      updateBookmarkBtn(bookmarks.includes(lessonId));
+      btnBookmark.addEventListener('click', () => {
+        const bm = getJson(KEYS.bookmarks, []);
+        const idx = bm.indexOf(lessonId);
+        if (idx >= 0) bm.splice(idx, 1); else bm.push(lessonId);
+        setJson(KEYS.bookmarks, bm);
+        updateBookmarkBtn(bm.includes(lessonId));
+      });
+    }
+  </script>
 </CourseLayout>
+
+<style>
+  /* Pure CSS tab switching using radio inputs */
+  .lesson-tabs .tab-label {
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--color-text-muted);
+    cursor: pointer;
+    transition: color 0.15s;
+    user-select: none;
+  }
+  .lesson-tabs .tab-label:hover {
+    color: var(--color-text-primary);
+  }
+  .lesson-tabs .tab-panel {
+    display: none;
+  }
+
+  /* Video tab active */
+  #tab-video:checked ~ div .tab-label[for="tab-video"] {
+    color: var(--color-accent-indigo);
+    background: var(--color-bg-secondary);
+    border: 1px solid var(--color-border);
+    border-bottom: none;
+    border-radius: 0.5rem 0.5rem 0 0;
+  }
+  #tab-video:checked ~ div #panel-video { display: block; }
+
+  /* PDF tab active */
+  #tab-pdf:checked ~ div .tab-label[for="tab-pdf"] {
+    color: var(--color-accent-indigo);
+    background: var(--color-bg-secondary);
+    border: 1px solid var(--color-border);
+    border-bottom: none;
+    border-radius: 0.5rem 0.5rem 0 0;
+  }
+  #tab-pdf:checked ~ div #panel-pdf { display: block; }
+
+  /* Notes tab active */
+  #tab-notes:checked ~ div .tab-label[for="tab-notes"] {
+    color: var(--color-accent-indigo);
+    background: var(--color-bg-secondary);
+    border: 1px solid var(--color-border);
+    border-bottom: none;
+    border-radius: 0.5rem 0.5rem 0 0;
+  }
+  #tab-notes:checked ~ div #panel-notes { display: block; }
+</style>
