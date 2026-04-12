@@ -21,9 +21,9 @@ const PROGRESS_PREFIX = 'sysdesign:quiz:progress-';
 
 interface QuizProgress {
   current: number;
-  scores: boolean[];
-  selected: number | null;
-  checked: boolean;
+  // answers[i] = selected answer index for question i, or null if unanswered
+  answers: (number | null)[];
+  checked: boolean; // whether current question has been checked
 }
 
 function getQuestions(moduleId: number): Question[] | null {
@@ -58,7 +58,7 @@ function getProgress(moduleId: number): QuizProgress | null {
   }
 }
 
-function saveProgress(moduleId: number, progress: QuizProgress) {
+function saveProgressToStorage(moduleId: number, progress: QuizProgress) {
   try {
     localStorage.setItem(PROGRESS_PREFIX + moduleId, JSON.stringify(progress));
   } catch {}
@@ -76,21 +76,22 @@ export default function Quiz({ moduleId }: Props) {
   const [current, setCurrent] = useState(0);
   const [selected, setSelected] = useState<number | null>(null);
   const [checked, setChecked] = useState(false);
-  const [scores, setScores] = useState<boolean[]>([]);
+  // answers[i] = selected answer index for question i
+  const [answers, setAnswers] = useState<(number | null)[]>([]);
   const [finished, setFinished] = useState(false);
   const [bestScore, setBestScore] = useState<number | null>(null);
-  const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
     setBestScore(getBestScore(moduleId));
     const saved = getProgress(moduleId);
     if (saved && questions && saved.current < questions.length) {
       setCurrent(saved.current);
-      setScores(saved.scores);
-      setSelected(saved.selected);
+      setAnswers(saved.answers);
+      setSelected(saved.answers[saved.current] ?? null);
       setChecked(saved.checked);
+    } else if (questions) {
+      setAnswers(new Array(questions.length).fill(null));
     }
-    setLoaded(true);
   }, [moduleId]);
 
   if (!questions || questions.length === 0) {
@@ -100,51 +101,62 @@ export default function Quiz({ moduleId }: Props) {
   const total = questions.length;
   const question = questions[current];
   const correctIndex = question.answers.findIndex((a) => a.correct);
+  const isAnswered = answers[current] !== null && answers[current] !== undefined;
+  const answeredCount = answers.filter((a) => a !== null).length;
+
+  function persist(cur: number, ans: (number | null)[], sel: number | null, chk: boolean) {
+    saveProgressToStorage(moduleId, { current: cur, answers: ans, checked: chk });
+  }
 
   function handleSelect(index: number) {
     if (checked) return;
     setSelected(index);
-    saveProgress(moduleId, { current, scores, selected: index, checked: false });
+    const newAnswers = [...answers];
+    newAnswers[current] = index;
+    setAnswers(newAnswers);
+    persist(current, newAnswers, index, false);
   }
 
   function handleCheck() {
     if (selected === null) return;
     setChecked(true);
-    saveProgress(moduleId, { current, scores, selected, checked: true });
+    persist(current, answers, selected, true);
   }
 
-  function handleNext() {
-    const isCorrect = selected === correctIndex;
-    const newScores = [...scores, isCorrect];
+  function goTo(index: number) {
+    if (index < 0 || index >= total) return;
+    setCurrent(index);
+    setSelected(answers[index] ?? null);
+    // If this question was already answered, show it as checked
+    setChecked(answers[index] !== null);
+    persist(index, answers, answers[index] ?? null, answers[index] !== null);
+  }
 
-    if (current + 1 >= total) {
-      const finalScore = newScores.filter(Boolean).length;
-      saveBestScore(moduleId, finalScore);
-      setBestScore(getBestScore(moduleId));
-      setScores(newScores);
-      setFinished(true);
-      clearProgress(moduleId);
-    } else {
-      const nextCurrent = current + 1;
-      setScores(newScores);
-      setCurrent(nextCurrent);
-      setSelected(null);
-      setChecked(false);
-      saveProgress(moduleId, { current: nextCurrent, scores: newScores, selected: null, checked: false });
-    }
+  function handleFinish() {
+    const score = questions.reduce((acc, q, i) => {
+      const ci = q.answers.findIndex((a) => a.correct);
+      return acc + (answers[i] === ci ? 1 : 0);
+    }, 0);
+    saveBestScore(moduleId, score);
+    setBestScore(getBestScore(moduleId));
+    setFinished(true);
+    clearProgress(moduleId);
   }
 
   function handleRestart() {
     setCurrent(0);
     setSelected(null);
     setChecked(false);
-    setScores([]);
+    setAnswers(new Array(total).fill(null));
     setFinished(false);
     clearProgress(moduleId);
   }
 
   if (finished) {
-    const finalScore = scores.filter(Boolean).length;
+    const finalScore = questions.reduce((acc, q, i) => {
+      const ci = q.answers.findIndex((a) => a.correct);
+      return acc + (answers[i] === ci ? 1 : 0);
+    }, 0);
     const pct = Math.round((finalScore / total) * 100);
     const colorClass =
       pct >= 70 ? 'text-green-400' : pct >= 50 ? 'text-yellow-400' : 'text-red-400';
@@ -157,7 +169,7 @@ export default function Quiz({ moduleId }: Props) {
 
     return (
       <div className="rounded-xl border border-border bg-bg-secondary/30 p-6">
-        <h3 className="text-lg font-semibold text-text-primary mb-4">Квиз завершён</h3>
+        <h3 className="text-lg font-semibold text-text-primary mb-4">Тест завершён</h3>
         <div className={`rounded-lg border p-4 mb-4 ${bgClass}`}>
           <p className={`text-2xl font-bold ${colorClass}`}>
             Результат: {finalScore} из {total}
@@ -179,7 +191,7 @@ export default function Quiz({ moduleId }: Props) {
     );
   }
 
-  const progressPct = Math.round((current / total) * 100);
+  const progressPct = Math.round((answeredCount / total) * 100);
 
   return (
     <div className="rounded-xl border border-border bg-bg-secondary/30 p-6">
@@ -189,9 +201,10 @@ export default function Quiz({ moduleId }: Props) {
           <span className="text-xs text-text-muted">
             Вопрос {current + 1} из {total}
           </span>
-          {bestScore !== null && (
-            <span className="text-xs text-text-muted">Лучший: {bestScore}/{total}</span>
-          )}
+          <span className="text-xs text-text-muted">
+            {answeredCount}/{total} отвечено
+            {bestScore !== null && ` · Лучший: ${bestScore}/${total}`}
+          </span>
         </div>
         <div className="h-1.5 rounded-full bg-bg-secondary overflow-hidden">
           <div
@@ -199,6 +212,35 @@ export default function Quiz({ moduleId }: Props) {
             style={{ width: `${progressPct}%` }}
           />
         </div>
+      </div>
+
+      {/* Question dots — clickable mini-nav */}
+      <div className="flex flex-wrap gap-1.5 mb-4">
+        {questions.map((_, i) => {
+          const isActive = i === current;
+          const wasAnswered = answers[i] !== null;
+          const wasCorrect = wasAnswered && answers[i] === questions[i].answers.findIndex((a) => a.correct);
+          return (
+            <button
+              key={i}
+              onClick={() => goTo(i)}
+              className={`w-7 h-7 rounded-full text-xs font-medium transition-all ${
+                isActive
+                  ? 'ring-2 ring-accent-indigo ring-offset-1 ring-offset-bg-secondary'
+                  : ''
+              } ${
+                wasAnswered
+                  ? wasCorrect
+                    ? 'bg-green-500/20 text-green-400'
+                    : 'bg-red-500/20 text-red-400'
+                  : 'bg-bg-secondary text-text-muted hover:bg-white/10'
+              }`}
+              title={`Вопрос ${i + 1}`}
+            >
+              {i + 1}
+            </button>
+          );
+        })}
       </div>
 
       {/* Question */}
@@ -240,22 +282,51 @@ export default function Quiz({ moduleId }: Props) {
         })}
       </ul>
 
-      {/* Actions */}
-      <div className="flex gap-2">
-        {!checked ? (
+      {/* Navigation + actions */}
+      <div className="flex items-center gap-2">
+        <button
+          onClick={() => goTo(current - 1)}
+          disabled={current === 0}
+          className="px-3 py-2 text-sm rounded-lg border border-border text-text-muted hover:text-text-primary hover:border-text-muted transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+        >
+          ← Назад
+        </button>
+
+        {!checked && selected !== null && (
           <button
             onClick={handleCheck}
-            disabled={selected === null}
-            className="px-4 py-2 text-sm font-semibold rounded-lg bg-gradient-to-r from-indigo-500 to-violet-500 text-white hover:from-indigo-600 hover:to-violet-600 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+            className="px-4 py-2 text-sm font-semibold rounded-lg bg-gradient-to-r from-indigo-500 to-violet-500 text-white hover:from-indigo-600 hover:to-violet-600 transition-all"
           >
             Проверить
           </button>
-        ) : (
+        )}
+
+        {checked && current + 1 < total && (
           <button
-            onClick={handleNext}
+            onClick={() => goTo(current + 1)}
             className="px-4 py-2 text-sm font-semibold rounded-lg bg-gradient-to-r from-indigo-500 to-violet-500 text-white hover:from-indigo-600 hover:to-violet-600 transition-all"
           >
-            {current + 1 >= total ? 'Завершить' : 'Следующий вопрос →'}
+            Следующий →
+          </button>
+        )}
+
+        {checked && current + 1 >= total && answeredCount === total && (
+          <button
+            onClick={handleFinish}
+            className="px-4 py-2 text-sm font-semibold rounded-lg bg-gradient-to-r from-indigo-500 to-violet-500 text-white hover:from-indigo-600 hover:to-violet-600 transition-all"
+          >
+            Завершить
+          </button>
+        )}
+
+        <div className="flex-1" />
+
+        {answeredCount === total && !checked && (
+          <button
+            onClick={handleFinish}
+            className="px-4 py-2 text-sm font-semibold rounded-lg border border-accent-indigo text-accent-indigo hover:bg-accent-indigo/10 transition-colors"
+          >
+            Завершить тест
           </button>
         )}
       </div>
