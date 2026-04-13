@@ -8,6 +8,7 @@ Open-source system design course website. Portfolio piece + real educational res
 - **Repo**: https://github.com/razkevich/sysdesign-course
 - **Authors**: Alex Razkevich, Artem Gromovsky
 - **Language**: Russian
+- **Analytics**: Yandex Metrica counter `108513607` — https://metrika.yandex.ru/dashboard?id=108513607
 
 ## Infrastructure
 
@@ -28,91 +29,91 @@ Open-source system design course website. Portfolio piece + real educational res
 
 ### DNS: Yandex Cloud DNS
 
-- **Zone**: sysdesign.online (public, managed in YC DNS)
-- **Nameservers**: ns1.yandexcloud.net, ns2.yandexcloud.net (configured in reg.ru registrar)
+- **Zone**: sysdesign.online (public, managed in YC DNS, zone ID `dns2oujjqm9rsvn3a1dl`)
+- **Nameservers**: ns1.yandexcloud.net, ns2.yandexcloud.net (configured at reg.ru registrar)
 - **Key records**: `course` A → 111.88.242.35 (YC VM), `mycourse` A → 146.190.19.161 (DO Moodle droplet)
+- **List records**: `yc dns zone list-records --id dns2oujjqm9rsvn3a1dl`
 
 ### Content Storage: Yandex Cloud Object Storage
 
-- **Videos bucket**: `sysdesign-course-videos-yc` (lessons, intro, case studies)
+- **Videos bucket**: `sysdesign-course-videos-yc` (lessons, intro.mp4, problems/*.mp4)
 - **PDFs bucket**: `sysdesign-course-pdfs-yc` (lesson PDFs)
 - **Service account**: `storage-admin`, credentials on YC VM at `~/.aws/credentials` (profile `yc`)
 - **Endpoint**: `https://storage.yandexcloud.net`
+- **Public URLs**:
+  - Videos: `https://storage.yandexcloud.net/sysdesign-course-videos-yc/{lessonId}.mp4`
+  - PDFs: `https://storage.yandexcloud.net/sysdesign-course-pdfs-yc/{lessonId}.pdf`
 
 ### Legacy (DigitalOcean)
 
 - **DO droplet** (146.190.19.161): runs Moodle (mycourse.sysdesign.online). Quiz data was extracted from here.
-- **DO Spaces**: old copies of videos/PDFs still exist in `sysdesign-course-videos` and `gammapdf` buckets (can be deleted).
+- **DO Spaces**: old copies of videos/PDFs in `sysdesign-course-videos` and `gammapdf` buckets (can be deleted — content is now on YC).
 - Source content also lives in Google Drive as the original source of truth.
 
 ## Tech Stack
 
 - **Framework**: Astro 6 (static output)
-- **UI Islands**: React 19 (via `@astrojs/react`) — interactive components hydrate client-side
+- **UI Islands**: React 19 (via `@astrojs/react`) — only where interactivity requires it
 - **Styling**: Tailwind CSS 4 (via `@tailwindcss/vite`, theme tokens in `src/styles/global.css`)
 - **Search**: Fuse.js (client-side fuzzy search)
-- **State**: localStorage (progress, bookmarks, notes, quiz scores, sidebar state)
-- **Lesson tabs**: Pure CSS (radio input + `:checked` sibling selectors) — works without JS for Russia reliability
-- **Buttons** (complete/bookmark/notes): Inline `<script>` with vanilla JS — no React dependency
+- **State**: localStorage (progress, bookmarks, notes, quiz scores, quiz progress, sidebar state)
+- **Lesson tabs**: Pure CSS (radio input + `:checked` sibling selectors) — works without JS
+- **Lesson actions** (complete/bookmark/notes): Inline `<script>` with vanilla JS — no React dependency
+- **Analytics**: Yandex Metrica with webvisor, clickmap, track links, accurate bounce
 
-## Content Sources
+## Content
 
-- **Videos**: `https://sysdesign-course-videos.ams3.digitaloceanspaces.com/{lessonId}.mp4`
-  - Intro: `/intro.mp4`
-  - Case studies: `/problems/{name}.mp4`
-- **PDFs**: `https://gammapdf.ams3.digitaloceanspaces.com/{lessonId}.pdf`
-  - Embedded via `<iframe>` on lesson pages (direct URL, no PHP viewer wrapper)
-  - CORS configured to allow `https://course.sysdesign.online`
-- **Quizzes**: Extracted from Moodle DB on DO droplet
-  - 124 questions across 7 modules, stored in `src/data/quizzes.json`
-  - To re-extract: SSH to DO droplet, query Moodle DB (credentials stored locally, not in repo)
+- **Videos** (YC Object Storage): lesson videos, `intro.mp4`, problem walkthroughs in `problems/`
+- **PDFs** (YC Object Storage): lesson PDFs by ID
+- **Quizzes**: 124 questions across 7 modules in `src/data/quizzes.json` (extracted from Moodle)
 
 ## Architecture
 
 ### Page Types
 
 **Marketing/Portfolio layer:**
-- `/` — Landing page (Hero with personas, CredibilityBar, Intro Video, Program Accordion, CTA)
+- `/` — Landing page (Hero with target personas, CredibilityBar with authors+stats, Intro Video, Program Accordion, CTA)
 
 **Learning layer** (all use `CourseLayout.astro` with collapsible sidebar):
-- `/course` — Materials dashboard (module cards with progress, case studies)
-- `/module/{id}` — Module page (lesson list, quiz link)
-- `/lesson/{id}` — Lesson page (pure CSS tabs: video/PDF/notes, vanilla JS for localStorage)
-- `/quiz/{id}` — Module quiz (React island, score saved to localStorage)
-- `/case/{id}` — Case study (video player, bookmark)
+- `/course` — Materials dashboard (module cards with progress, case studies with "Подход к решению задач" highlighted first)
+- `/module/{id}` — Module page (lesson list with completion, quiz link card)
+- `/lesson/{id}` — Lesson page (pure CSS tabs: Видео/PDF/Заметки, vanilla JS for complete/bookmark/notes)
+- `/quiz/{id}` — Module quiz (React island with navigation between questions, progress saved to localStorage)
+- `/case/{id}` — Case study (video player, bookmark, prev/next navigation)
 - `/search`, `/bookmarks` — utility pages
 
 ### Key Design Decisions
 
-- **Lesson tabs are pure CSS** (not React) — the radio-input pattern works without JS hydration. This was changed because React islands frequently failed to hydrate from Russia due to network issues.
-- **Complete/bookmark/notes buttons use inline vanilla JS** — tiny `<script>` tags that access localStorage directly. No external dependencies.
-- **React islands are only used where truly needed**: sidebar, quiz, search widget, module cards grid, program accordion.
-- **pdf.js worker served locally** (`/pdf.worker.min.js`) — unpkg.com CDN is blocked in Russia.
+- **Lesson tabs are pure CSS** (not React) — the radio-input pattern works without JS hydration. Done because React islands frequently failed to hydrate from Russia due to network issues.
+- **Lesson action buttons use inline vanilla JS** — tiny `<script>` tags that access localStorage directly. No external dependencies.
+- **React islands are only used where truly needed**: sidebar, quiz, search widget, module cards grid, program accordion, bookmarks list, case content.
+- **Quiz features**: navigate between questions (back/forward buttons + clickable question dots), auto-check on answer select (no "Проверить" button), mid-quiz progress saved to localStorage, resume where you left off.
+- **Content on YC Object Storage** — served from Russian datacenter for reliable access.
 
 ### Component Architecture
 
 **Astro components** (`.astro`) — static, no client JS:
-- `Layout.astro`, `CourseLayout.astro` — page shells
+- `Layout.astro`, `CourseLayout.astro` — page shells (Layout contains Yandex Metrica snippet)
 - `Navbar.astro`, `Footer.astro` — shared chrome
 - `Hero.astro`, `CredibilityBar.astro`, `IntroVideo.astro` — landing sections
-- `ProblemCard.astro` — case study card
+- `ProblemCard.astro` — case study card (supports `highlight` prop)
 
 **React islands** (`.tsx`, hydrated with `client:load`):
-- `CourseSidebar.tsx` — LMS-style collapsible navigation sidebar
+- `CourseSidebar.tsx` — LMS-style collapsible navigation (280px expanded / 48px collapsed strip)
 - `ModuleCardsGrid.tsx` — module cards with localStorage progress bars
 - `LessonList.tsx` — lesson list with completion checkmarks
-- `Quiz.tsx` — interactive quiz (one question at a time)
+- `Quiz.tsx` — interactive quiz with navigation, progress saving, auto-check answers
 - `SearchWidget.tsx` — Fuse.js search dropdown
 - `BookmarksList.tsx` — bookmarks list
-- `ProgramAccordion.tsx` — expandable program overview (landing page)
-- `CaseContent.tsx` — case study video + bookmark
-- `PdfViewer.tsx` — pdf.js viewer (lazy-loaded with error boundary, used by LessonContent.tsx if JS hydrates)
-- `LessonContent.tsx` — legacy React lesson content (kept in repo but lesson pages now use pure CSS tabs instead)
+- `ProgramAccordion.tsx` — expandable program overview with lesson titles + case studies section
+- `CaseContent.tsx` — case study video player
+- `PdfViewer.tsx` — pdf.js viewer (kept but lesson pages now use simple iframe instead)
+- `LessonContent.tsx` — legacy React lesson content (not used, pure CSS tabs in `pages/lesson/[id].astro` instead)
 
 ### Data Layer
 
-- `src/data/course.ts` — course structure, URL helpers, query functions
-- `src/data/quizzes.json` — quiz questions (from Moodle)
+- `src/data/course.ts` — course structure, YC URL helpers, query functions
+- `src/data/quizzes.json` — 124 quiz questions keyed by module ID
 - `src/lib/storage.ts` — typed localStorage wrappers
 
 ## Development
@@ -126,9 +127,9 @@ npm run preview  # Preview built site
 
 ## Deployment
 
-Site is static files served by nginx on Yandex Cloud.
+Static files served by nginx on Yandex Cloud.
 
-**Quick deploy from local:**
+**Standard deploy:**
 ```bash
 npm run build
 rsync -avz --delete dist/ yc-user@111.88.242.35:/tmp/course-dist/
@@ -139,7 +140,7 @@ ssh yc-user@111.88.242.35 "sudo cp -r /tmp/course-dist/* /var/www/course.sysdesi
 ```bash
 export PATH="$HOME/yandex-cloud/bin:$PATH"
 yc compute instance start sysdesign-course
-# Wait ~30s, then the site is back. IP stays the same.
+# Wait ~30s, IP stays the same
 ```
 
 **If you need to recreate the VM:**
@@ -159,31 +160,33 @@ yc compute instance create \
 
 **DNS update** (if IP changes):
 ```bash
-# Find current record ID
-doctl compute domain records list sysdesign.online | grep course
-# Delete old, create new
-doctl compute domain records delete sysdesign.online <old-id> --force
-doctl compute domain records create sysdesign.online \
-  --record-type A --record-name course --record-data <new-ip> --record-ttl 300
+export PATH="$HOME/yandex-cloud/bin:$PATH"
+yc dns zone remove-records --id dns2oujjqm9rsvn3a1dl --record "course 300 A <old-ip>"
+yc dns zone add-records --id dns2oujjqm9rsvn3a1dl --record "course 300 A <new-ip>"
 ```
 
 ## localStorage Keys
 
 ```
-sysdesign:progress        → { "1-1": true, "1-2": true, ... }
-sysdesign:bookmarks       → ["1-3", "case-airbnb", ...]
-sysdesign:notes           → { "1-1": "My notes...", ... }
-sysdesign:quiz:module-{N} → { score: 8, total: 10 }
-sysdesign:sidebar         → "open" | "collapsed"
+sysdesign:progress                → { "1-1": true, "1-2": true, ... }
+sysdesign:bookmarks               → ["1-3", "case-airbnb", ...]
+sysdesign:notes                   → { "1-1": "My notes...", ... }
+sysdesign:quiz:module-{N}         → number (best score)
+sysdesign:quiz:progress-{N}       → { current, answers: (number|null)[], checked }
+sysdesign:sidebar                 → "open" | "collapsed"
 ```
 
 ## Adding Content
 
-**New lesson**: Add entry to `src/data/course.ts` → upload video/PDF to DO Spaces → rebuild and deploy.
+**New lesson**:
+1. Add entry to `src/data/course.ts` in appropriate module
+2. Upload video to `sysdesign-course-videos-yc` bucket (S3-compatible, use YC credentials from VM)
+3. Upload PDF to `sysdesign-course-pdfs-yc` bucket
+4. Rebuild and deploy
 
-**New quiz questions**: Update `src/data/quizzes.json` or re-extract from Moodle.
+**New quiz questions**: Edit `src/data/quizzes.json` (keyed by module ID) or re-extract from Moodle on DO droplet.
 
-**New module**: Add to `courseData.modules` in `course.ts` with a new color.
+**New module**: Add to `courseData.modules` in `course.ts` with a unique color.
 
 ## Social Links
 
