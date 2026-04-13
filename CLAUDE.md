@@ -191,6 +191,5 @@ sysdesign:sidebar                 → "open" | "collapsed"
 ## Social Links
 
 - Telegram: https://t.me/ship_happens_404
-- YouTube: https://youtube.com/@shiphappens-404
 - Email: info@sysdesign.online
 - GitHub: https://github.com/razkevich/sysdesign-course

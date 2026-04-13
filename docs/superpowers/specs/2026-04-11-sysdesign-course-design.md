@@ -62,7 +62,7 @@ Portfolio-focused showcase. Does NOT show learning materials.
 4. **Intro Video** — intro.mp4 embedded
 5. **Program Accordion** — All 7 modules + case studies section, each expandable with descriptions + lesson titles. "Подход к решению задач" shown first in case studies with 🔥.
 6. **CTA** — "Начать обучение" → /course
-7. **Footer** — Telegram, YouTube, Email, GitHub links
+7. **Footer** — Telegram, Email, GitHub links
 
 ### Materials Page (`/course`)
 
